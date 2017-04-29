@@ -1,0 +1,40 @@
+<div>
+	<button class="btn btn-warning" ng-click="showConsole=!showConsole" type="button"
+	style="position:fixed;top:0;left:0;">`</button>
+	<console class="expand">
+		<button class='btn btn-default' ng-click='playpause()' type='button'>
+			<i class='fa fa-{{game.is_running&&"pause"||"play"}}'></i>
+		</button>
+		<button class='btn btn-default' ng-click='game.twisted=!game.twisted' type='button'>
+			<i class='fa fa-{{game.twisted&&"th"||"cubes"}}'></i>
+		</button>
+		<p class="text-danger">Tick:{{game.tick|date:'HH:mm:ss'}}</p>
+		<p class="text-danger">Time:{{game.elapsed|date:'HH:mm:ss'}}</p>
+		<div class="col-sm-3 form-group">
+		<label>zoom: {{map.zoom}}</label>
+		<input type=range ng-model="map.zoom" min=1 max=100 >
+		</div>
+		<div class="col-sm-3 form-group">
+		<label># in block: {{map.BLOCK_RADIUS}}</label>
+		<input type=range ng-model="map.BLOCK_RADIUS" min=1 max=20 >
+		<button type=button class="btn btn-default btn-xs" ng-click="init()">reinit</button>
+		</div>
+		<div class="col-sm-3 form-group">
+		<label>speed: {{game.speed}}</label>
+		</div>
+		<div class="col-sm-3"><p ng-repeat="log in game.log" class="list-group-item">{{log}}</p></div>
+	</console>
+	<canvas height=500 width=500 ng-controller="mapController" class="center-block" ng-class="{twisted:game.twisted}"></canvas>
+	<div ng-if="showConsole">
+	<h4>Hexes</h4>
+	<div class="pre-scrollable">
+		<pre ng-repeat="hex in map.tiles">({{hex.position.x}}, {{hex.position.y}}, {{hex.position.z}})</pre>
+	</div>
+	<h4>Entities</h4>
+	<div class="pre-scrollable">
+	<div ng-repeat="e in entities" class="col-xs-4">
+		<pre>({{e|json}})</pre>
+	</div>
+	</div>
+	</div>
+</div>
