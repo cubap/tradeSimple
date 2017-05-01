@@ -74,6 +74,7 @@ function update() {
                 }
             } else {
                 // just keep moving unless...
+                if (!pet.isMoving) {
                     pet.isMoving = game.physics.arcade.moveToXY(pet, headedTo.x, headedTo.y, 150);
                 }
             }
