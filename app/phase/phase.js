@@ -1,4 +1,4 @@
-var pet, cursors, game, tween;
+var pet, cursors, game, tween, waypoints;
 var command = {};
 
 function gameInit() {
@@ -20,10 +20,11 @@ function create() {
     pet = game.add.sprite(game.world.centerX, game.world.centerY, 'prey');
     // TODO: factory these
     pet._waypoints = [];
+    waypoints = game.add.group();
     pet.scale.x = pet.scale.y = 2;
     pet.anchor = { x: .5, y: 1 };
     game.physics.arcade.enable(pet);
-    pet.body.onMoveComplete.add(function(deets) {
+    pet.body.onMoveComplete.add(function (deets) {
         console.log(deets);
         pet.body.velocity.x = 0;
         pet.body.velocity.y = 0;
@@ -55,34 +56,37 @@ function update() {
         }
     } else {
         // move through waypoints
-        if (pet.headedTo) {
+        if (pet._waypoints.length) {
+            var headedTo = pet._waypoints[0];
             // active waypoint
-            var dist = game.physics.arcade.distanceToXY(pet, pet.headedTo.x, pet.headedTo.y);
-            console.log(dist);
+            var dist = game.physics.arcade.distanceToXY(pet, headedTo.x, headedTo.y);
             if (dist <= 4) {
                 // arrived, move on
-                pet.headedTo = null;
-                // TODO: update counters on waypoints and remove reach waypoint
+                pet._waypoints.shift().wp.destroy();
+                // pick a new waypoint and go there
+                headedTo = pet._waypoints[0];
+                waypoints.callAll('updateWaypoint');
+                if (headedTo) {
+                    pet.isMoving = game.physics.arcade.moveToXY(pet, headedTo.x, headedTo.y, 150);
+                    // TODO: move on curves between waypoints
+                } else {
+                    // stop moving on next update
+                }
             } else {
-                // just keep moving
+                // just keep moving unless...
+                    pet.isMoving = game.physics.arcade.moveToXY(pet, headedTo.x, headedTo.y, 150);
+                }
             }
         } else {
-            // pick a new waypoint and go there
-            pet.headedTo = pet._waypoints.pop();
-            if (pet.headedTo) {
-                pet.isMoving = game.physics.arcade.moveToXY(pet, pet.headedTo.x, pet.headedTo.y, 150);
-                // TODO: move on curves between waypoints
-            } else {
-                pet.isMoving = false;
-                pet.body.stopMovement(true);
-            }
+            pet.isMoving = false;
+            pet.body.stopMovement(true);
         }
     }
 };
 
-function render() {};
+function render() { };
 
-command.setWaypoint = function(pointer) {
+command.setWaypoint = function (pointer) {
     // TODO: attach limit to amount of waypoints set by user based on pet attributes
     var wp = game.add.sprite(pointer.worldX, pointer.worldY, "waypoint");
     wp.anchor = { x: .5, y: 1 };
@@ -91,10 +95,16 @@ command.setWaypoint = function(pointer) {
         fill: "#220",
         align: "center",
         fontWeight: "bold"
-    }
-    var count = game.add.text(0, 0, pet._waypoints.length + 1 + "", style);
+    };
+    waypoints.add(wp);
+    wp.index = waypoints.countLiving();
+    var count = game.add.text(0, 0, wp.index, style);
     count.anchor.set(.5, 1.5);
     wp.addChild(count);
-    pet._waypoints.unshift({ x: pointer.worldX, y: pointer.worldY, wp: wp });
+    wp.updateWaypoint = function () {
+        var label = this.getChildAt(0);
+        label.setText((--this.index));
+    }
+    pet._waypoints.push({ x: pointer.worldX, y: pointer.worldY, wp: wp });
     // pet.isMoving = true;
 };
