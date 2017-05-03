@@ -24,7 +24,7 @@ function create() {
     pet.scale.x = pet.scale.y = 2;
     pet.anchor = { x: .5, y: 1 };
     game.physics.arcade.enable(pet);
-    pet.body.onMoveComplete.add(function (deets) {
+    pet.body.onMoveComplete.add(function(deets) {
         console.log(deets);
         pet.body.velocity.x = 0;
         pet.body.velocity.y = 0;
@@ -85,9 +85,9 @@ function update() {
     }
 };
 
-function render() { };
+function render() {};
 
-command.setWaypoint = function (pointer) {
+command.setWaypoint = function(pointer) {
     // TODO: attach limit to amount of waypoints set by user based on pet attributes
     var wp = game.add.sprite(pointer.worldX, pointer.worldY, "waypoint");
     wp.anchor = { x: .5, y: 1 };
@@ -102,10 +102,77 @@ command.setWaypoint = function (pointer) {
     var count = game.add.text(0, 0, wp.index, style);
     count.anchor.set(.5, 1.5);
     wp.addChild(count);
-    wp.updateWaypoint = function () {
+    wp.updateWaypoint = function() {
         var label = this.getChildAt(0);
         label.setText((--this.index));
     }
     pet._waypoints.push({ x: pointer.worldX, y: pointer.worldY, wp: wp });
     // pet.isMoving = true;
 };
+
+function Pet() {
+    return {
+        type: "ANIMAL",
+        home: null, // home tile for animal, must be sought out
+        growthRate: 0, // TODO: include growth and life stages for animals
+        loc: tid, // this tile id, new animals always start somewhere
+        holds: [], // stored items for drops
+        queue: [], // actions to complete
+        drive: { // behavior motivators
+            hunger: 0, // food need
+            thirst: 0, // water need
+            rest: 0, // sleep need
+            sex: 0, // reproduction need
+            security: 0 // cover need
+        },
+        trait: { // action modifiers
+            healthMax: 10, // alive hitpoints
+            health: 10, // current
+            enduranceMax: 10, // fatigue hitpoints
+            endurance: 10, // current
+            stealth: 15, // hideability modifier
+            movement: .5 // speed m/s
+        },
+        tolerates: {
+            // each priority-changing possibility with
+            // thresholds - array of points of inflection (in 100%)
+            // priorities - matched array of priority at thresholds
+            // action - remedy sought when priority is high
+            hunger: {
+                thresholds: [0, 30, 60, 90, 100],
+                priorities: [0, 15, 50, 80, 100],
+                action: act.forage
+            },
+            thirst: {
+                thresholds: [0, 30, 50, 80, 100],
+                priorities: [0, 15, 50, 80, 100],
+                action: act.forage
+            },
+            rest: {
+                thresholds: [0, 75, 85, 95, 100],
+                priorities: [0, 20, 40, 60, 100],
+                action: act.sleep
+            },
+            sex: {
+                thresholds: [0, 90, 100],
+                priorities: [0, 60, 80],
+                action: act.reproduce
+            },
+            security: {
+                thresholds: [0, 30, 60, 100],
+                priorities: [0, 50, 85, 100],
+                action: act.shelter
+            },
+            health: { // of 100% current/max
+                thresholds: [0, 30, 60, 100],
+                priorities: [0, 50, 85, 100],
+                action: act.hideHeal
+            },
+            endurance: { // of 100% current/max
+                thresholds: [0, 30, 60, 100],
+                priorities: [0, 50, 85, 100],
+                action: act.hideHeal
+            }
+        }
+    };
+}
