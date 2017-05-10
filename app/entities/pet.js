@@ -7,6 +7,7 @@ TG.Pet = function(game,x,y,options) {
     // this.worldPosition = { x: x, y: y };
     this.anchor = { x: .5, y: 1 };
     game.physics.arcade.enable(this);
+    this.profile = profile;
 }
 TG.Pet.prototype = Object.create(Phaser.Sprite.prototype);
 TG.Pet.prototype.constructor = TG.Pet;
@@ -83,7 +84,7 @@ var profile = {
             enduranceMax: 10, // fatigue hitpoints
             endurance: 10, // current
             stealth: 15, // hideability modifier
-            movement: .5 // speed m/s
+            movement: 10 // max speed m/s
         },
         tolerates: {
             // each priority-changing possibility with
