@@ -97,90 +97,20 @@ function preload() {
 function create() {
     game.world.setBounds(0, 0, 1610, 1610); // 100 times less for dev
     game.physics.startSystem(Phaser.Physics.ARCADE);
-    var bg = game.add.tileSprite(0, 0, 1610, 1610, 'bg');
-    bg.tileScale.y = bg.tileScale.x = 1 //100;
-    pet = game.add.sprite(game.world.centerX, game.world.centerY, 'prey');
-    Object.assign(pet, Pet);
-    // TODO: factory these
-    pet._waypoints = [];
-    waypoints = game.add.group();
-    pet.scale.x = pet.scale.y = 1;
-    pet.anchor = { x: .5, y: 1 };
-    game.physics.arcade.enable(pet);
-    pet.body.onMoveComplete.add(function(deets) {
-        console.log(deets);
-        pet.body.velocity.x = 0;
-        pet.body.velocity.y = 0;
-    });
-
-    cursors = game.input.keyboard.createCursorKeys();
-
+    var bg = game.add.tileSprite(0, 0, 161000, 161000, 'bg');
+    bg.tileScale.y = bg.tileScale.x = 3 //100;
+    pet = new TG.Pet(game, game.world.centerX, game.world.centerY);
+    game.add.existing(pet);
     game.camera.focusOn(pet);
     //  0.1 is the amount of linear interpolation to use.
     //  The smaller the value, the smooth the camera (and the longer it takes to catch up)
-    game.camera.follow(pet, Phaser.Camera.FOLLOW_LOCKON, 0.05, 0.05);
+    game.camera.follow(pet, Phaser.Camera.FOLLOW_LOCKON, 0.5, 0.5);
 
+    cursors = game.input.keyboard.createCursorKeys();
     game.input.onTap.add(command.setWaypoint, this);
 };
 
-function update() {
-    if (!pet.isMoving && pet._waypoints.length === 0) {
-        pet.body.velocity = { x: 0, y: 0 };
-        if (cursors.up.isDown) {
-            pet.body.velocity.y = -300;
-        } else if (cursors.down.isDown) {
-            pet.body.velocity.y = 300; // 10px/m so 30m/s
-        }
-
-        if (cursors.left.isDown) {
-            pet.body.velocity.x = -300;
-        } else if (cursors.right.isDown) {
-            pet.body.velocity.x = 300;
-        }
-    } else {
-        // move through waypoints
-        if (pet._waypoints.length) {
-            var headedTo = pet._waypoints[0];
-            // active waypoint
-            var dist = game.physics.arcade.distanceToXY(pet, headedTo.x, headedTo.y);
-            if (dist <= 4) {
-                // arrived, move on
-                pet._waypoints.shift().wp.destroy();
-                // pick a new waypoint and go there
-                headedTo = pet._waypoints[0];
-                waypoints.callAll('updateWaypoint');
-                if (headedTo) {
-                    // pet.isMoving = game.physics.arcade.moveToXY(pet, headedTo.x, headedTo.y, 150);
-                    // move on curves between waypoints
-                    var direction = new Phaser.Point(headedTo.x, headedTo.y);
-                    direction.subtract(pet.body.position.x, pet.body.position.y);
-                    direction.normalize();
-                    direction.setMagnitude(pet.trait.movement);
-                    direction.subtract(pet.body.velocity.x, pet.body.velocity.y);
-                    direction.normalize();
-                    direction.setMagnitude(pet.trait.movement);
-                    pet.body.velocity = Phaser.Point.add(new Phaser.Point(direction.x, direction.y), pet.body.velocity);
-                    // pet.body.velocity.add(direction.x, direction.y);
-                    pet.body.velocity = Phaser.Point.normalize(new Phaser.Point(pet.body.velocity.x, pet.body.velocity.y));
-                    //pet.body.velocity.normalize();
-                    pet.body.velocity.setMagnitude(pet.trait.movement);
-                    // pet.angle = 180 + Phaser.Math.radToDeg(Phaser.Point.angle(boids[i].position, new Phaser.Point(boids[i].x + boids[i].body.velocity.x, boids[i].y + boids[i].body.velocity.y)));
-                    pet.rotation = Phaser.Point.angle(pet.body.position, new Phaser.Point(pet.body.x + pet.body.velocity.x, pet.body.y + pet.body.velocity.y));
-                } else {
-                    // stop moving on next update
-                }
-            } else {
-                // just keep moving unless...
-                if (!pet.isMoving) {
-                    pet.isMoving = game.physics.arcade.moveToXY(pet, headedTo.x, headedTo.y, 150);
-                }
-            }
-        } else {
-            pet.isMoving = false;
-            pet.body.stopMovement(true);
-        }
-    }
-};
+function update() {};
 
 function render() {};
 
